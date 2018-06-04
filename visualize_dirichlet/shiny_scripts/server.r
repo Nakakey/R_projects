@@ -1,33 +1,38 @@
 shinyServer(function(input, output,session) {
 
-    output$output02 <- renderPlot({
-      status <- input$type_p
-      if(status=="Min"){
-    df_gt <- as.data.frame(cbind(True=gt,Estimate=est,time_step=1:length(gt)))
-    }else if(status=="MAP"){
-      df_gt <- as.data.frame(cbind(True=gt,Estimate=est_MAP,time_step=1:length(gt)))
-    }else if(status=="full"){
-      df_gt <- as.data.frame(cbind(True=gt,Estimate_min=est,Estimate_map=est_MAP,time_step=1:length(gt)))
-    }else{
-    df_gt <- as.data.frame(cbind(True=gt,time_step=1:length(gt)))
-    }
-    df_gt <- melt(df_gt,id.vars="time_step")
+    output$output01 <- renderPlotly({
+      a1 <- input$alpha1
+      a2 <- input$alpha2
+      a3 <- input$alpha3
+      al <- c(a1, a2, a3)
+      dens <- apply(gri, 1, function(x)ddirichlet(x, al))
+      dens[is.na(dens)] <- 0
+      dens[is.infinite(dens)] <- 0
+      surf <- cbind(gri, dens)
+      df.list <- list(mu1 = x, mu2 = y, likelihood = matrix(dens, nrow = num_grid, ncol = num_grid), type = "surface")
+      tmp <- 1 - df.list$mu1 - df.list$mu2
+      custom_txt <- paste0("mu1:", round(rep(df.list$mu1, times = num_grid),4),
+                    "</br>mu2:", round(rep(df.list$mu2, times = num_grid),4), # correct break syntax
+                    "</br>mu3:", round(rep(ifelse(tmp >= 0, tmp, 0), times = num_grid),4),
+                    "</br>likelihood:", round(df.list$likelihood,4)) %>%
+      matrix(num_grid, num_grid)
 
-    ##make plot
-    g <- ggplot(NULL) + theme_bw() +theme(plot.title = element_text(hjust = 0.5,size=25),text = element_text(size = 20),axis.title = element_text(size = 20),axis.text.x = element_text(size = 15),axis.text.y = element_text(size = 15))
-
-    g <- g +  geom_point(data=df,aes(x=time_step,y=result,size=weight)) +
-    geom_line(data=df_gt,aes(x=time_step,y=value,group=variable,colour=variable,linetype=variable),size=2) + geom_vline(aes(xintercept=input$timestep),col="green")
-    plot(g) 
+      plot_ly(x= ~df.list$mu1, y = ~df.list$mu2, z= ~df.list$likelihood,
+              type = "surface",
+              text = ~custom_txt,
+              hoverinfo = "text + x",
+              width = "1280px", height = "960px"
+              ) %>%
+        layout(title = "Dirichlet distribution",
+               scene = list(xaxis = list(title = "coords1"),
+               yaxis = list(title = "coords2"),
+               zaxis = list(title = "likelihood")))
     })
 
 
+    ##dipole result visualization
+    if(0){
 	output$output01 <- renderRglwidget({
-		time_step <- input$timestep
-        ind_model <- input$num_model
-        if(input$type=="prior"){dat <- res_prior[[time_step]][[ind_model]]
-        }else{dat <- res_posterior[[time_step]][[ind_model]]}
-        
         nrow_pf <- nrow(dat[[1]]$mean)
         dat2 <- list.map(dat,mean[nrow_pf,])
         particles <- list.map(dat,mean)
@@ -65,6 +70,7 @@ shinyServer(function(input, output,session) {
   })
 
   output$info <- renderTable(res_info())
+    }
 
 })
 

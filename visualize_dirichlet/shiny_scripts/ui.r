@@ -1,24 +1,19 @@
 shinyUI(fluidPage(
-	titlePanel(name_file),
-	fluidRow(column(10,offset=0.5,
-      column(3,
-             selectInput("type_p",label="select result plot type",choices=c("normal","MAP","Min","full")),
+	titlePanel("Dirichlet distribution"),
+	fluidRow(column(10,offset=0.1,
+      column(2,
              wellPanel(
-        h4("data selection"),
+        h4("parameter setting"),
         #select time-step(dynamically change)
-        numericInput("timestep",label="time step",value=1,max=tseq),
-        #select type
-        selectInput("type",label="prior or posterior",choices=c("prior","posterior")),
-        h5("selected timestep's result"),
-        tableOutput("info"),
-        numericInput("num_model",label="index of model",value=1),
+        numericInput("alpha1",label="alpha_1",value=1),
+        numericInput("alpha2",label="alpha_2",value=1),
+        numericInput("alpha3",label="alpha_3",value=1),
         submitButton("Submit"),
         HTML("<br>"),
         HTML("<br>")
       )),
-      column(9,
-        plotOutput("output02",height="275px"),
-        rglwidgetOutput("output01")
+      column(10,
+        plotlyOutput("output01", height = 900)
       )
     ))
 
