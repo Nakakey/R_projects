@@ -19,7 +19,9 @@ shinyServer(function(input, output,session) {
               type = "mesh3d",
               text = ~custom_txt,
               hoverinfo = "text",
-              width = "1280px", height = "960px"
+              width = "1280px", height = "960px",
+              colors = colorRamp(c("blue", "green", "yellow", "red"))
+
               ) %>%
         layout(title = "Dirichlet distribution",
                scene = list(xaxis = list(title = ""),

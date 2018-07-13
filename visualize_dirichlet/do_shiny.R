@@ -5,6 +5,8 @@ library(shiny)
 library(plotly)
 library(MCMCpack)
 library(dplyr)
+library(RColorBrewer)
+
 
 num_grid <- 100
 x <- seq(0, 1, length.out = num_grid)
